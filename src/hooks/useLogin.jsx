@@ -1,0 +1,39 @@
+import { useState, useContext } from "react";
+import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
+
+const URL = "http://localhost:5000/api/user/login";
+
+const useLogin = () => {
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(null);
+
+  const { dispatch } = useContext(AuthContext);
+
+  const login = async (email, password) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.post(URL, { email, password });
+      console.log(response.data);
+
+      //save user to local storaage
+      localStorage.setItem("user", JSON.stringify(response.data));
+
+      //update the auth context
+      dispatch({ type: "LOGIN", payload: response.data });
+
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      setError(
+        error.response?.data?.Error || "An error occurred during signup."
+      );
+    }
+  };
+
+  return { login, isLoading, error };
+};
+
+export default useLogin;
